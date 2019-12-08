@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+      python: 3.7
+  pre_build:
+    commands:
+      - echo Test the python application.
+      - pip install -r app/requirements.txt
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - flake8 app/*.py
+  build:
+    commands:
+      - echo Build the Docker image.
+      - echo "$REPOSITORY_URI"
+      - docker build -t "$REPOSITORY_URI":latest .
+  post_build:
+    commands:
+      - echo pushing docker file to ECR
+      - docker push "$REPOSITORY_URI"
+artifacts:
+  files:
+    - '**/*'
+  name: python-app-$(date +%y%m%d%H%M).zip
